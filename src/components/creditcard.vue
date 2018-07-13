@@ -25,18 +25,22 @@
       <div class="input-part1">
           <div class="input-part1-left">
             <input class="input-cardNum" @focus="changeNumstyle" @blur="defaultNumStyle" @input="editcardNum" ref="inputCardNum" type="text" placeholder="Card Number" maxlength="19">
+            <v-bounced :promptMsg="promptMsg" v-show="numPromopt"></v-bounced>
             E.g.: 49..., 51..., 36..., 37...
           </div>
           <div class="input-part1-right">
             <input class="input-name" v-model="cardOwner" @focus="changeNamestyle" @blur="defaultNameStyle" @input="editName" ref="inputName" type="text" placeholder="Name">
+            <v-bounced :promptMsg="promptMsg" v-show="namePromopt"></v-bounced>
           </div>
       </div>
       <div class="input-part2">
         <div class="input-part2-left">
           <input class="input-validThru" @focus="changeValidthrustyle" @blur="defaultValidthruStyle" @input="editValidThru" ref="inputValidThru" type="text" placeholder="Valid Thru" maxlength="4">
+          <v-bounced :promptMsg="promptMsg" v-show="validthruPromopt"></v-bounced>
         </div>
         <div class="input-part2-right">
           <input class="input-cvc" @input="editCvc" ref="inputCvc" @focus="toCardBack" @blur="toCardFront" type="text" placeholder="CVC" maxlength="4">
+          <v-bounced :promptMsg="promptMsg" v-show="cvcPromopt"></v-bounced>
         </div>
       </div>
     </div>
@@ -66,8 +70,16 @@
         numStyle : '',
         nameStyle : '',
         validthruStyle : '',
-        cardInfo : ''
+        cardInfo : '',
+        promptMsg : '',
+        numPromopt : false,
+        namePromopt : false,
+        validthruPromopt : false,
+        cvcPromopt : false
       }
+    },
+    components : {
+      'v-bounced': resolve => require(['./bounced'], resolve)
     },
     methods : {
       editcardNum :  function(e){
@@ -118,21 +130,35 @@
         var validThru = this.$refs.inputValidThru.value;
         var cvc = this.$refs.inputCvc.value;
         if(num.length == 16 || num.length == 19) {
+          this.numPromopt = false;
           if(name) {
+            this.namePromopt = false;
             if(validThru.length == 4) {
+              this.validthruPromopt = false;
               if(cvc.length == 4) {
+                this.cvcPromopt = false;
                 this.cardInfo = "pay-info-show";
+                this.promptMsg = '';
+                return ;
               } else {
-                alert("Please enter the correct cvc format!")
+                this.cvcPromopt = true;
+                this.promptMsg="请按照要求填写此字段";
+                return ;
               }
             } else {
-              alert("Please enter the correct expiry format!")
+              this.validthruPromopt = true;
+              this.promptMsg="请按照要求填写此字段";
+              return ;
             }
           } else {
-            alert("Please enter your name!")
+            this.namePromopt = true;
+            this.promptMsg="请按照要求填写此字段";
+            return ;
           }
         } else {
-          alert("Please enter the correct card number format!")
+          this.numPromopt = true;
+          this.promptMsg="请按照要求填写此字段";
+          return ;
         }
       },
       changeNumstyle : function() {
@@ -293,7 +319,7 @@
   .input-part2 {
     width: 100%;
   }
-  .input-part2 div {
+  .input-part2 .input-part2-left,.input-part2 .input-part2-right {
     width: 40%;
     float: left;
   }
@@ -307,22 +333,21 @@
     margin-left: 20%;
   }
   .pay {
+    margin: 80px auto 0;
     width: 400px;
     height: 38px;
-    margin: 80px auto 0;
-    position: relative;
-    background-color: #007BFF;
-    border: 1px solid #007BFF;
-    border-radius: 5px;
   }
   .pay-btn {
     border: 0;
-    width: 100%;
+    margin-top: 100px;
+    width: 400px;
     height: 38px;
     font-size: 18px;
     font-weight: bold;
     color: #ffffff;
     background-color: #007BFF;
+    border: 1px solid #007BFF;
+    border-radius: 5px;
     display: block;
     outline: none;
   }
