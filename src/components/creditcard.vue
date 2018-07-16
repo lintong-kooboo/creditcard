@@ -1,15 +1,16 @@
 <template>
   <div id="card">
-    <div :class="[cardStyle]">
+    <div :class="[cardStyle]" v-bind:style="{background : bgColor}">
       <div class="card-front">
         <div class="card-image"></div>
-        <div class="card-num" :class="[numStyle]">
+        <div class="card-logo" :class="[cardLogo]"></div>
+        <div class="card-num" :class="{focused : numStyle}">
           {{cardNum}}
         </div>
-        <div class="card-owner" :class="[nameStyle]">
+        <div class="card-owner" :class="{focused : nameStyle}">
           {{cardOwner?cardOwner:'YOUR NAME HERE'}}
         </div>
-        <div class="card-validThru" :class="[validthruStyle]">
+        <div class="card-validThru" :class="{focused : validthruStyle}">
           valid thru<br>
           {{cardValidThru?cardValidThru:'●●/●●'}}
         </div>
@@ -17,29 +18,48 @@
       <div class="card-back">
         <div class="card-back-bg"></div>
         <div class="card-back-content">
-          {{cvc}}
+          {{cardCvc}}
         </div>
       </div>
     </div>
     <div class="card-info">
       <div class="input-part1">
           <div class="input-part1-left">
-            <input class="input-cardNum" @focus="changeNumstyle" @blur="defaultNumStyle" @input="editcardNum" ref="inputCardNum" type="text" placeholder="Card Number" maxlength="19">
+            <input class="input-cardNum" type="text" placeholder="Card Number" maxlength="19"
+                  @input="editcardNum" 
+                  v-mask="'#### #### #### ####'"
+                  ref="inputCardNum"
+                  @focus="numStyle = !numStyle" 
+                  @blur="numStyle = !numStyle">
             <v-bounced :promptMsg="promptMsg" v-show="numPromopt"></v-bounced>
             E.g.: 49..., 51..., 36..., 37...
           </div>
           <div class="input-part1-right">
-            <input class="input-name" v-model="cardOwner" @focus="changeNamestyle" @blur="defaultNameStyle" @input="editName" ref="inputName" type="text" placeholder="Name">
+            <input class="input-name" type="text" placeholder="Name"
+                  ref="inputName"
+                  v-model="cardOwner" 
+                  @focus="nameStyle = !nameStyle"
+                  @blur="nameStyle = !nameStyle" >
             <v-bounced :promptMsg="promptMsg" v-show="namePromopt"></v-bounced>
           </div>
       </div>
       <div class="input-part2">
         <div class="input-part2-left">
-          <input class="input-validThru" @focus="changeValidthrustyle" @blur="defaultValidthruStyle" @input="editValidThru" ref="inputValidThru" type="text" placeholder="Valid Thru" maxlength="4">
+          <input class="input-validThru" type="text" placeholder="Valid Thru" maxlength="5"
+                @input="editValidThru" 
+                v-mask="'##/##'"
+                ref="inputValidThru"
+                @focus="validthruStyle = !validthruStyle" 
+                @blur="validthruStyle = !validthruStyle" >
           <v-bounced :promptMsg="promptMsg" v-show="validthruPromopt"></v-bounced>
         </div>
         <div class="input-part2-right">
-          <input class="input-cvc" @input="editCvc" ref="inputCvc" @focus="toCardBack" @blur="toCardFront" type="text" placeholder="CVC" maxlength="4">
+          <input class="input-cvc" type="text" placeholder="CVC" maxlength="4"
+                v-mask="'####'"
+                v-model="cardCvc"
+                ref="inputCvc"  
+                @focus="toCardBack" 
+                @blur="toCardFront">
           <v-bounced :promptMsg="promptMsg" v-show="cvcPromopt"></v-bounced>
         </div>
       </div>
@@ -50,7 +70,7 @@
           number: {{cardNum}}<br>
           name: {{cardOwner}}<br>
           expiry: {{cardValidThru}}<br>
-          cvc: {{cvc}}<br>
+          cvc: {{cardCvc}}<br>
       </div>
     </div>
 
@@ -58,312 +78,277 @@
 </template>
 
 <script type="text/ecmascript-6">
-  export default {
-    name : 'creditcard',
-    data() {
-      return {
-        cardStyle : 'card',
-        cardNum : '●●●● ●●●● ●●●● ●●●●',
-        cardOwner : '',
-        cardValidThru : '●●/●●',
-        cvc : '',
-        numStyle : '',
-        nameStyle : '',
-        validthruStyle : '',
-        cardInfo : '',
-        promptMsg : '',
-        numPromopt : false,
-        namePromopt : false,
-        validthruPromopt : false,
-        cvcPromopt : false
-      }
+
+import bounced from "@/components/bounced"
+import { replaceStr } from "../common/common.js"
+
+export default {
+  name : 'creditcard',
+  data() {
+    return {
+      cardStyle : 'card',
+      cardNum : '●●●● ●●●● ●●●● ●●●●',
+      cardOwner : '',
+      cardValidThru : '●●/●●',
+      cardCvc : '',
+      numStyle : false,
+      nameStyle : false,
+      validthruStyle : false,
+      cardInfo : '',
+      promptMsg : '',
+      numPromopt : false,
+      namePromopt : false,
+      validthruPromopt : false,
+      cvcPromopt : false,
+      bgColor : '',
+      cardLogo : ''
+    }
+  },
+  components : {
+    'v-bounced': bounced
+  },
+  methods : {
+    editcardNum :  function(e){
+      this.cardNum = replaceStr('●●●● ●●●● ●●●● ●●●●',e.target.value);
     },
-    components : {
-      'v-bounced': resolve => require(['./bounced'], resolve)
+    editValidThru : function(e) {
+      this.cardValidThru = replaceStr('●●/●●',e.target.value);
     },
-    methods : {
-      editcardNum :  function(e){
-        this.$refs.inputCardNum.value = e.target.value.replace(/[^\d]/g,'');
-        var number = this.$refs.inputCardNum.value;
-        var defaultnum = '';
-        if(number.length <= 16) {
-          for(var i = 0;i < 16 - number.length ; i++){
-            defaultnum += '●'
-          }
-          number += defaultnum;
-          this.cardNum = number.replace(/\s/g, '').replace(/(.{4})/g, "$1 ");
-        } else {
-          for(var i = 0;i < 19 - number.length ; i++){
-            defaultnum += '●'
-          }
-          number += defaultnum;
-          this.cardNum = number.replace(/\s/g, '').replace(/(.{4})/g, "$1 ");
-        }
-      },
-      editName : function() {
-        this.cardOwner = this.$refs.inputName.value;
-      },
-      editValidThru : function(e) {
-        this.$refs.inputValidThru.value = e.target.value.replace(/[^\d]/g,'');
-        var validThru= this.$refs.inputValidThru.value;
-        var defaultnum = '';
-        for (var i = 0; i < 4 - validThru.length; i++) {
-          defaultnum += '●';
-        }
-        validThru += defaultnum;
-        validThru = validThru.replace(/\s/g, '').replace(/(.{2})/g, "$1/");
-        this.cardValidThru = validThru.substring(0,validThru.length-1);
-      },
-      editCvc :function(e) {
-        this.$refs.inputCvc.value = e.target.value.replace(/[^\d]/g,'');
-        this.cvc= this.$refs.inputCvc.value;
-      },
-      toCardBack : function() {  
-        this.cardStyle = 'cardback';
-      },
-      toCardFront : function() {
-        this.cardStyle = 'cardfront' + ' ' + 'card';
-      },
-      pay : function() {
-        var num = this.$refs.inputCardNum.value;
-        var name = this.$refs.inputName.value;
-        var validThru = this.$refs.inputValidThru.value;
-        var cvc = this.$refs.inputCvc.value;
-        if(num.length == 16 || num.length == 19) {
-          this.numPromopt = false;
-          if(name) {
-            this.namePromopt = false;
-            if(validThru.length == 4) {
-              this.validthruPromopt = false;
-              if(cvc.length == 4) {
-                this.cvcPromopt = false;
-                this.cardInfo = "pay-info-show";
-                this.promptMsg = '';
-                return ;
-              } else {
-                this.cvcPromopt = true;
-                this.promptMsg="请按照要求填写此字段";
-                return ;
-              }
+    toCardBack : function() {  
+      this.cardStyle = 'cardback';
+    },
+    toCardFront : function() {
+      this.cardStyle = 'cardfront' + ' ' + 'card';
+    },
+    pay : function() {
+      if(this.cardNum.length == 19) {
+        this.numPromopt = false;
+        if(this.cardOwner) {
+          this.namePromopt = false;
+          if(this.cardValidThru.length == 5) {
+            this.validthruPromopt = false;
+            if(this.cardCvc.length == 4) {
+              this.cvcPromopt = false;
+              this.cardInfo = "pay-info-show";
+              this.promptMsg = '';
+              return ;
             } else {
-              this.validthruPromopt = true;
+              this.cvcPromopt = true;
               this.promptMsg="请按照要求填写此字段";
               return ;
             }
           } else {
-            this.namePromopt = true;
+            this.validthruPromopt = true;
             this.promptMsg="请按照要求填写此字段";
             return ;
           }
         } else {
-          this.numPromopt = true;
+          this.namePromopt = true;
           this.promptMsg="请按照要求填写此字段";
           return ;
         }
-      },
-      changeNumstyle : function() {
-        this.numStyle = 'change'
-      },
-      changeNamestyle : function() {
-        this.nameStyle = 'change'
-      },
-      changeValidthrustyle : function() {
-        this.validthruStyle = 'change'
-      },
-      defaultNumStyle : function() {
-        this.numStyle = ''
-      },
-      defaultNameStyle : function() {
-        this.nameStyle = ''
-      },
-      defaultValidthruStyle : function() {
-        this.validthruStyle = ''
+      } else {
+        this.numPromopt = true;
+        this.promptMsg="请按照要求填写此字段";
+        return ;
+      }
+    }
+  },
+  watch : {
+    cardNum : function(val) {
+      var value = val.substring(0,2);
+      switch (value) {
+        case '49':
+          this.bgColor = 'linear-gradient(25deg, #0f509e, #1399cd)'
+          this.cardLogo = 'bgone'
+          break;
+        case '51':
+          this.bgColor = 'linear-gradient(25deg, #f37b26, #fdb731)'
+          this.cardLogo = 'bgtwo'
+          break;
+        case '36':
+          this.bgColor = 'linear-gradient(25deg, #fff, #eee)'
+          this.cardLogo = 'bgthree'
+          break;
+        case '37':
+          this.bgColor = 'linear-gradient(25deg, #308c67, #a3f2cf)'
+          this.cardLogo = 'bgfour'
+          break;
+        default:
+          this.bgColor = ''
+          this.cardLogo = ''
+          break;
       }
     }
   }
+}
 </script>
 
-<style rel="stylesheet">
-  html,body {
-    margin: 0;
-    padding: 0;
-  }
-  #card {
-    margin: 30px auto;
-    transform-style: preserve-3d;
-  }
-  .card-front,.card-back {
-    backface-visibility: hidden;
-  }
-  .card-front {
-    z-index: 2;
-  }
-  .card-back {
-    transform: rotateY(180deg);
-  }
-  .card {
-    width: 290px;
-    margin: 0 auto;
-    color: #C3C3C3;
-    border-radius: 15px;
-    background-color: #999999;
-    position: relative;
-  }
-  .cardfront {
-    transition: 0.6s;
-    transform-style: preserve-3d;
-  }
-  .card .card-back {
-    display: none;
-  }
-  .card .card-front {
-    display: block;
-  }
-  .cardback {
-    width: 290px;
-    margin: 0 auto;
-    color: #C3C3C3;
-    border-radius: 15px;
-    background-color: #999999;
-    position: relative;
-    transform: rotateY(180deg);
-    transition: 0.6s;
-    transform-style: preserve-3d;
-  }
-  .cardback .card-front {
-    display: none;
-  }
-  .cardback .card-back {
-    display: block;
-  }
-  .card-front {
-    width: 230px;
-    padding: 18px 0 30px 30px;
-    font-size: 13PX;
-    font-weight: bolder;
-  }
-  .card-back {
-    width: 100%;
-    height: 141px;
-    padding: 18px 0 30px;
-    background-color: #000000;
-    margin: 0 auto;
-    border-radius: 15px;
-    background-color: #999999;
-  }
-  .card-image {
-    width: 37px;
-    height: 27px;
-    background-image: url(../assets/img/card-image.svg);
-    background-repeat: no-repeat;
-    background-size: contain;
-  }
-  .card-num {
-    margin: 40px auto 35px;
-    font-size: 14px;
-    letter-spacing: 2px;
-  }
-  .card-owner {
-    width: 60%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    display: inline-block;
-  }
-  .card-validThru {
-    width: 30%;
-    font-size: 12px;
-    text-align: center;
-    float: right;
-    margin-top: -18px;
-  }
-  .card-back-bg {
-    width: 100%;
-    height: 41px;
-    background-color: #000000;
-  }
-  .card-back-content {
-    width: 75%;
-    height: 33px;
-    font-size: 12px;
-    font-weight: 550;
-    color: #000000;
-    text-align: right;
-    line-height: 43px;
-    margin: 10px 0 0 15px;
-    background-image: url(../assets/img/back.png);
-  }
-  .card-info {
-    width: 400px;
-    margin: 30px auto;
-    font-size: 12px;
-  }
-  .card-info input {
-    border: 1px solid #D9D9D9;
-    border-radius: 5px;
-    padding: 10px 0;
-    margin-top: 20px;
-    outline: #80BDFF;
-    text-indent: 10px;
-  }
-  .input-part1 {
-    width: 100%;
-  }
-  .input-cardNum,.input-name {
-    width: 100%;
-  }
-  .card-info input:focus {
-    border: 1px solid #808Dff;
-    border-radius: 5px;
-  }
-  .input-part2 {
-    width: 100%;
-  }
-  .input-part2 .input-part2-left,.input-part2 .input-part2-right {
-    width: 40%;
-    float: left;
-  }
-  .input-part2 input {
-    margin-top: 20px;
-    width: 100%;
-    border: 1px solid #D9D9D9;
-    border-radius: 5px;
-  }
-  .input-part2-right {
-    margin-left: 20%;
-  }
-  .pay {
-    margin: 80px auto 0;
-    width: 400px;
-    height: 38px;
-  }
-  .pay-btn {
-    border: 0;
-    margin-top: 100px;
-    width: 400px;
-    height: 38px;
-    font-size: 18px;
-    font-weight: bold;
-    color: #ffffff;
-    background-color: #007BFF;
-    border: 1px solid #007BFF;
-    border-radius: 5px;
-    display: block;
-    outline: none;
-  }
-  .pay-btn:hover {
-    cursor: pointer;
-  }
-  .pay-card-info {
-    display: none;
-    padding: 20px 50px;
-    line-height: 30px;
-    font-size: 14px;
-  }
-  .pay-info-show {
-    display: block;
-  }
-  .change {
-    color: #ffffff;
-  }
+<style scoped lang="stylus" rel="stylesheet/stylus">
+  html,body 
+    margin: 0
+    padding: 0
+    #card
+      margin: 30px auto;
+      transform-style: preserve-3d
+    .card-front,.card-back
+      backface-visibility: hidden
+    .card-front
+      z-index: 2
+    .card-back
+      transform: rotateY(180deg)
+    .card
+      width: 290px
+      margin: 0 auto
+      color: #C3C3C3
+      border-radius: 15px
+      background-color: #999999
+      position: relative
+      .card-back
+        display: none
+      .card-front
+        display: block
+    .cardfront
+      transition: 0.6s
+      transform-style: preserve-3d
+    .cardback
+      width: 290px
+      margin: 0 auto
+      color: #C3C3C3
+      border-radius: 15px
+      background-color: #999999
+      position: relative
+      transform: rotateY(180deg)
+      transition: 0.6s
+      transform-style: preserve-3d
+      .card-front
+        display: none
+      .card-back
+        display: block
+    .card-front
+      width: 230px
+      padding: 18px 0 30px 30px
+      font-size: 13PX
+      font-weight: bolder
+    .card-back
+      width: 100%
+      height: 141px
+      padding: 18px 0 30px
+      background-color: #000000
+      margin: 0 auto
+      border-radius: 15px
+      background-color: #999999
+    .card-image
+      width: 37px
+      height: 27px
+      background-image: url(../assets/img/card-image.svg)
+      background-repeat: no-repeat
+      background-size: contain
+    .card-logo
+      width 40%
+      height 23%
+      position absolute
+      right 10%
+      top 10%
+      background-size contain
+      background-repeat no-repeat
+      background-position top right 
+    .card-num
+      margin: 40px auto 35px
+      font-size: 14px
+      letter-spacing: 2px
+    .card-owner
+      width: 60%
+      overflow: hidden
+      text-overflow: ellipsis
+      white-space: nowrap
+      display: inline-block
+    .card-validThru
+      width: 30%
+      font-size: 12px
+      text-align: center
+      float: right
+      margin-top: -18px
+    .card-back-bg
+      width: 100%
+      height: 41px
+      background-color: #000000
+    .card-back-content
+      width: 75%
+      height: 33px
+      font-size: 12px
+      font-weight: 550
+      color: #000000
+      text-align: right
+      line-height: 43px
+      margin: 10px 0 0 15px
+      background-image: url(../assets/img/back.png)
+    .card-info 
+      width: 400px
+      margin: 30px auto
+      font-size: 12px
+      input
+        border: 1px solid #D9D9D9
+        border-radius: 5px
+        padding: 10px 0
+        margin-top: 20px
+        outline: #80BDFF
+        text-indent: 10px
+      input:focus
+        border: 1px solid #808Dff
+        border-radius: 5px
+    .input-part1
+      width: 100%
+    .input-cardNum,.input-name 
+      width: 100%
+    .input-part2 
+      width: 100%
+      .input-part2-left,.input-part2-right
+        width: 40%
+        float: left
+      input
+        margin-top: 20px
+        width: 100%
+        border: 1px solid #D9D9D9
+        border-radius: 5px
+    .input-part2-right
+      margin-left: 20%
+    .pay
+      margin: 80px auto 0
+      width: 400px
+      height: 38px
+    .pay-btn
+      border: 0
+      margin-top: 100px
+      width: 400px
+      height: 38px
+      font-size: 18px
+      font-weight: bold
+      color: #ffffff
+      background-color: #007BFF
+      border: 1px solid #007BFF
+      border-radius: 5px
+      display: block
+      outline: none
+    .pay-btn:hover
+      cursor: pointer
+    .pay-card-info
+      display: none
+      padding: 20px 50px
+      line-height: 30px
+      font-size: 14px
+    .pay-info-show 
+      display: block
+    .focused 
+      color: #ffffff
+    .changeBlack
+      color: black
+    .bgone
+      background-image url(../assets/img/49.jpg)
+    .bgtwo
+      background-image url(../assets/img/51.svg)
+    .bgthree
+      background-image url(../assets/img/36.svg)
+    .bgfour
+      background-image url(../assets/img/37.svg)
 </style>
