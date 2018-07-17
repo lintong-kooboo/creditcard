@@ -1,5 +1,5 @@
 <template>
-  <div class="promptMessage">
+  <div class="promptMessage" v-show="alertMsg">
     <div class="arrow">
       <div class="blank"></div>
     </div>
@@ -15,6 +15,10 @@
     props: {
       promptMsg: {
         type: String
+      },
+      alertMsg: {
+        type: Boolean,
+        value: false
       }
     }
   }  
@@ -22,38 +26,38 @@
 
 <style scoped lang="stylus" rel="stylesheet/stylus">
   .promptMessage
-    width: 200px
-    height: 40px
-    border: 1px solid #B4B4B3
-    margin: 8px auto 20px
-    position: relative
+    width 200px
+    height 40px
+    border 1px solid #B4B4B3
+    margin 8px auto 20px
+    position relative
     left 50%
     margin-left -100px
     background-color #ffffff
     .arrow
-      border-color: transparent transparent #B4B4B3 transparent 
-      border-width: 8px
-      border-style:dashed dashed solid dashed 
-      position: absolute
-      left: 10%
-      top: -50%
-      margin-top: 4px
+      border-color transparent transparent #B4B4B3 transparent 
+      border-width 8px
+      border-style dashed dashed solid dashed 
+      position absolute
+      left 10%
+      top -50%
+      margin-top 4px
       .blank
-        border-color: transparent transparent #fff transparent 
-        border-width: 8px
-        border-style:dashed dashed solid dashed 
-        position: absolute
-        left: -8px
-        top: -7px
+        border-color transparent transparent #fff transparent 
+        border-width 8px
+        border-style dashed dashed solid dashed 
+        position absolute
+        left -8px
+        top -7px
     .bounced
-      height: 30px
-      padding: 0 15px
-      overflow: hidden
-      line-height: 40px
-      text-align: center
+      height 30px
+      padding 0 15px
+      overflow hidden
+      line-height 40px
+      text-align center
       img
-        width: 20px
-        height: 20px
-        margin: 10px 0
-        float: left
+        width 20px
+        height 20px
+        margin 10px 0
+        float left
 </style>

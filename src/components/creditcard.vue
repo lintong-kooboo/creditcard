@@ -105,7 +105,8 @@ export default {
       cvcPromopt : false,
       bgColor : '',
       cardLogo : '',
-      showResult : false
+      showResult : false,
+      alertMsg : false
     }
   },
   components : {
@@ -135,25 +136,29 @@ export default {
             if(cardinfo[3].length == 4) {
               this.cvcPromopt = false
               this.showResult = true
-              // this.promptMsg = ''
+              this.alertMsg = false
               return 
             } else {
               this.cvcPromopt = true
+              this.alertMsg = true
               this.promptMsg="请按照要求填写此字段"
               return 
             }
           } else {
             this.validthruPromopt = true
+              this.alertMsg = true
             this.promptMsg="请按照要求填写此字段"
             return 
           }
         } else {
           this.namePromopt = true
+              this.alertMsg = true
           this.promptMsg="请按照要求填写此字段"
           return 
         }
       } else {
         this.numPromopt = true
+              this.alertMsg = true
         this.promptMsg="请按照要求填写此字段"
         return 
       }
