@@ -23,19 +23,21 @@
 <style scoped lang="stylus" rel="stylesheet/stylus">
   .promptMessage
     width: 200px
-    height: 30px
+    height: 40px
     border: 1px solid #B4B4B3
     margin: 8px auto 20px
-    position: relativ
+    position: relative
+    left 50%
+    margin-left -100px
+    background-color #ffffff
     .arrow
       border-color: transparent transparent #B4B4B3 transparent 
       border-width: 8px
       border-style:dashed dashed solid dashed 
       position: absolute
-      left: 50%
+      left: 10%
       top: -50%
-      margin-left: -4px
-      margin-top: -1px
+      margin-top: 4px
       .blank
         border-color: transparent transparent #fff transparent 
         border-width: 8px
@@ -47,11 +49,11 @@
       height: 30px
       padding: 0 15px
       overflow: hidden
-      line-height: 30px
+      line-height: 40px
       text-align: center
-      .bounced img
+      img
         width: 20px
         height: 20px
-        margin: 5px 0
+        margin: 10px 0
         float: left
 </style>
