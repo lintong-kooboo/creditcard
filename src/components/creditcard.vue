@@ -1,68 +1,52 @@
 <template>
   <div id="card">
-    <div :class="[cardStyle]" v-bind:style="{background : bgColor}">
-        <div class="card-front">
-          <div class="card-image"></div>
-          <div class="card-logo" :class="[cardLogo]"></div>
-          <div class="card-num" :class="{focused : numStyle}">
-            {{cardNum}}
-          </div>
-          <div class="card-owner" :class="{focused : nameStyle}">
-            {{cardOwner?cardOwner:'YOUR NAME HERE'}}
-          </div>
-          <div class="card-validThru" :class="{focused : validthruStyle}">
-            valid thru<br>
-            {{cardValidThru?cardValidThru:'●●/●●'}}
-          </div>
-        </div>
-      <div class="card-back">
-        <div class="card-back-bg"></div>
-        <div class="card-back-content">
-          {{cardCvc}}
-        </div>
-      </div>
-    </div>
+    <v-cardContent :cardNum="cardNum"
+                   :cardOwner="cardOwner" 
+                   :cardValidThru="cardValidThru" 
+                   :cardStyle="cardStyle"
+                   :cardCvc="cardCvc"
+                   :numStyle="numStyle"
+                   :nameStyle="nameStyle"
+                   :validthruStyle="validthruStyle"></v-cardContent>
     <div class="card-info">
       <div class="input-part1">
           <div class="input-part1-left">
             <input class="input-cardNum" type="text" placeholder="Card Number" maxlength="19"
-                  @input="editcardNum" 
-                  v-model="cardnumber"
-                  v-mask="'#### #### #### ####'"
-                  ref="inputCardNum"
-                  @focus="numStyle = !numStyle" 
-                  @blur="numStyle = !numStyle">
-            <v-bounced :promptMsg="promptMsg" v-show="numPromopt"></v-bounced>
+                   oninput="this.value = this.value.replace(/[^\d]/g,'').replace(/(\d{4})(?=\d)/g,'$1 ')" 
+                   v-model="cardNum"
+                   ref="inputCardNum"
+                   @focus="numStyle = !numStyle" 
+                   @blur="numStyle = !numStyle">
+            <v-bounced :promptMsg="promptMsg" v-show="isPrompt[0]"></v-bounced>
             E.g.: 49..., 51..., 36..., 37...
           </div>
           <div class="input-part1-right">
             <input class="input-name" type="text" placeholder="Name"
-                  ref="inputName"
-                  v-model="cardOwner" 
-                  @focus="nameStyle = !nameStyle"
-                  @blur="nameStyle = !nameStyle" >
-            <v-bounced :promptMsg="promptMsg" v-show="namePromopt"></v-bounced>
+                   ref="inputName"
+                   v-model="cardOwner" 
+                   @focus="nameStyle = !nameStyle"
+                   @blur="nameStyle = !nameStyle" >
+            <v-bounced :promptMsg="promptMsg" v-show="isPrompt[1]"></v-bounced>
           </div>
       </div>
       <div class="input-part2">
         <div class="input-part2-left">
           <input class="input-validThru" type="text" placeholder="Valid Thru" maxlength="5"
-                @input="editValidThru" 
-                v-model="cardvalidthru"
-                v-mask="'##/##'"
-                ref="inputValidThru"
-                @focus="validthruStyle = !validthruStyle" 
-                @blur="validthruStyle = !validthruStyle" >
-          <v-bounced :promptMsg="promptMsg" v-show="validthruPromopt"></v-bounced>
+                 oninput="this.value = this.value.replace(/[^\d]/g,'').replace(/(\d{2})(?=\d)/g,'$1/')" 
+                 v-model="cardValidThru"
+                 ref="inputValidThru"
+                 @focus="validthruStyle = !validthruStyle" 
+                 @blur="validthruStyle = !validthruStyle" >
+          <v-bounced :promptMsg="promptMsg" v-show="isPrompt[2]"></v-bounced>
         </div>
         <div class="input-part2-right">
           <input class="input-cvc" type="text" placeholder="CVC" maxlength="4"
-                v-mask="'####'"
-                v-model="cardCvc"
-                ref="inputCvc"  
-                @focus="toCardBack" 
-                @blur="toCardFront">
-          <v-bounced :promptMsg="promptMsg" v-show="cvcPromopt"></v-bounced>
+                 oninput="this.value = this.value.replace(/[^\d]/g,'')" 
+                 v-model="cardCvc"
+                 ref="inputCvc"  
+                 @focus="toCardBack" 
+                 @blur="toCardFront">
+          <v-bounced :promptMsg="promptMsg" v-show="isPrompt[3]"></v-bounced>
         </div>
       </div>
     </div>
@@ -82,43 +66,30 @@
 <script type="text/ecmascript-6">
 
 import bounced from "@/components/bounced"
-import { replaceStr } from "../common/common.js"
+import cardContent from "@/components/cardContent"
 
 export default {
   name : 'creditcard',
   data() {
     return {
       cardStyle : 'card',
-      cardNum : '●●●● ●●●● ●●●● ●●●●',
-      cardnumber : '',
+      cardNum : '',
       cardOwner : '',
-      cardValidThru : '●●/●●',
-      cardvalidthru : '',
+      cardValidThru : '',
       cardCvc : '',
       numStyle : false,
       nameStyle : false,
       validthruStyle : false,
       promptMsg : '',
-      numPromopt : false,
-      namePromopt : false,
-      validthruPromopt : false,
-      cvcPromopt : false,
-      bgColor : '',
-      cardLogo : '',
-      showResult : false,
-      alertMsg : false
+      isPrompt : [],
+      showResult : false
     }
   },
   components : {
+    'v-cardContent' : cardContent,
     'v-bounced': bounced
   },
   methods : {
-    editcardNum :  function(e){
-      this.cardNum = replaceStr('●●●● ●●●● ●●●● ●●●●',e.target.value)
-    },
-    editValidThru : function(e) {
-      this.cardValidThru = replaceStr('●●/●●',e.target.value)
-    },
     toCardBack : function() {  
       this.cardStyle = 'cardback'
     },
@@ -126,68 +97,53 @@ export default {
       this.cardStyle = 'cardfront' + ' ' + 'card'
     },
     pay : function() {
-      var cardinfo = [this.cardnumber,this.cardOwner,this.cardvalidthru,this.cardCvc]
-      if(cardinfo[0].length == 19) {
-        this.numPromopt = false
-        if(cardinfo[1] && cardinfo[1] != "YOUR NAME HERE") {
-          this.namePromopt = false
-          if(cardinfo[2].length == 5) {
-            this.validthruPromopt = false
-            if(cardinfo[3].length == 4) {
-              this.cvcPromopt = false
-              this.showResult = true
-              this.alertMsg = false
-              return 
-            } else {
-              this.cvcPromopt = true
-              this.alertMsg = true
-              this.promptMsg="请按照要求填写此字段"
-              return 
-            }
-          } else {
-            this.validthruPromopt = true
-              this.alertMsg = true
-            this.promptMsg="请按照要求填写此字段"
-            return 
-          }
-        } else {
-          this.namePromopt = true
-              this.alertMsg = true
-          this.promptMsg="请按照要求填写此字段"
-          return 
-        }
+      var cardinfo = [this.cardNum,this.cardOwner,this.cardValidThru,this.cardCvc]
+      // card number
+      if(cardinfo[0].length < 1) {
+        this.isPrompt[0] = true
+        this.promptMsg="Please enter the card number."
+        return
+      } else if(cardinfo[0].length != 19) {
+        this.isPrompt[0] = true
+        this.promptMsg="Please keep consistent with the required length."
+        return
       } else {
-        this.numPromopt = true
-              this.alertMsg = true
-        this.promptMsg="请按照要求填写此字段"
-        return 
+        this.isPrompt[0] = false
       }
-    }
-  },
-  watch : {
-    cardNum : function(val) {
-      var value = val.substring(0,2)
-      switch (value) {
-        case '49':
-          this.bgColor = 'linear-gradient(25deg, #0f509e, #1399cd)'
-          this.cardLogo = 'bgone'
-          break
-        case '51':
-          this.bgColor = 'linear-gradient(25deg, #f37b26, #fdb731)'
-          this.cardLogo = 'bgtwo'
-          break
-        case '36':
-          this.bgColor = 'linear-gradient(25deg, #fff, #eee)'
-          this.cardLogo = 'bgthree'
-          break
-        case '37':
-          this.bgColor = 'linear-gradient(25deg, #308c67, #a3f2cf)'
-          this.cardLogo = 'bgfour'
-          break
-        default:
-          this.bgColor = ''
-          this.cardLogo = ''
-          break
+      // name
+      if(cardinfo[1].length < 1 || cardinfo[1]==="YOUR NAME HERE") {
+        this.isPrompt[1] = true
+        this.promptMsg="Please enter your name."
+        return
+      } else {
+        this.isPrompt[1] = false
+      }
+      // valid thru
+      if(cardinfo[2].length < 1) {
+        this.isPrompt[2] = true
+        this.promptMsg="Please enter the valid thru."
+        return
+      } else if(cardinfo[2].length != 5) {
+        this.isPrompt[2] = true
+        this.promptMsg="Please keep consistent with the required length."
+        return
+      } else {
+        this.isPrompt[2] = false
+      }
+      // cvc
+      if(cardinfo[3].length < 1) {
+        this.isPrompt[3] = true
+        this.promptMsg="Please enter the cvc."
+        return
+      } else if(cardinfo[3].length != 4) {
+        this.isPrompt[3] = true
+        this.promptMsg="Please keep consistent with the required length."
+        return
+      } else {
+        this.isPrompt[3] = false
+      }
+      if(!this.isPrompt[0] && !this.isPrompt[1] && !this.isPrompt[2] && !this.isPrompt[3]) {
+        this.showResult = true
       }
     }
   }
@@ -201,98 +157,6 @@ export default {
     #card
       margin 30px auto
       transform-style preserve-3d
-    .card-front,.card-back
-      backface-visibility hidden
-    .card-front
-      z-index 2
-    .card-back
-      transform rotateY(180deg)
-    .card
-      width 290px
-      margin 0 auto
-      color #C3C3C3
-      border-radius 15px
-      background-color #999999
-      position relative
-      .card-back
-        display none
-      .card-front
-        display block
-    .cardfront
-      transition 0.6s
-      transform-style preserve-3d
-    .cardback
-      width 290px
-      margin 0 auto
-      color #C3C3C3
-      border-radius 15px
-      background-color #999999
-      position relative
-      transform rotateY(180deg)
-      transition 0.6s
-      transform-style preserve-3d
-      .card-front
-        display none
-      .card-back
-        display block
-    .card-front
-      width 230px
-      padding 18px 0 30px 30px
-      font-size 13PX
-      font-weight bolder
-    .card-back
-      width 100%
-      height 141px
-      padding 18px 0 30px
-      background-color #000000
-      margin 0 auto
-      border-radius 15px
-      background-color #999999
-    .card-image
-      width 37px
-      height 27px
-      background-image url(../assets/img/card-image.svg)
-      background-repeat no-repeat
-      background-size contain
-    .card-logo
-      width 40%
-      height 23%
-      position absolute
-      right 10%
-      top 10%
-      background-size contain
-      background-repeat no-repeat
-      background-position top right 
-    .card-num
-      margin 40px auto 35px
-      font-size 14px
-      letter-spacing 2px
-    .card-owner
-      width 60%
-      overflow hidden
-      text-overflow ellipsis
-      white-space nowrap
-      display inline-block
-    .card-validThru
-      width 30%
-      font-size 12px
-      text-align center
-      float right
-      margin-top -18px
-    .card-back-bg
-      width 100%
-      height 41px
-      background-color #000000
-    .card-back-content
-      width 75%
-      height 33px
-      font-size 12px
-      font-weight 550
-      color #000000
-      text-align right
-      line-height 43px
-      margin 10px 0 0 15px
-      background-image url(../assets/img/back.png)
     .card-info 
       width 400px
       margin 30px auto
@@ -346,20 +210,10 @@ export default {
       padding 20px 50px
       line-height 30px
       font-size 14px
-    .focused 
-      color #ffffff
     .changeBlack
       color black
     .selected-enter-active, .selected-leave-active
         transition opacity .5s
     .selected-enter, .selected-leave-active
       opacity 0
-    .bgone
-      background-image url(../assets/img/49.jpg)
-    .bgtwo
-      background-image url(../assets/img/51.svg)
-    .bgthree
-      background-image url(../assets/img/36.svg)
-    .bgfour
-      background-image url(../assets/img/37.svg)
 </style>

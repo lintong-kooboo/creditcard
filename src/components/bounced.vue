@@ -1,5 +1,5 @@
 <template>
-  <div class="promptMessage" v-show="alertMsg">
+  <div class="promptMessage">
     <div class="arrow">
       <div class="blank"></div>
     </div>
@@ -15,10 +15,6 @@
     props: {
       promptMsg: {
         type: String
-      },
-      alertMsg: {
-        type: Boolean,
-        value: false
       }
     }
   }  
@@ -26,21 +22,22 @@
 
 <style scoped lang="stylus" rel="stylesheet/stylus">
   .promptMessage
-    width 200px
+    width 340px
     height 40px
     border 1px solid #B4B4B3
     margin 8px auto 20px
     position relative
     left 50%
-    margin-left -100px
+    margin-left -170px
     background-color #ffffff
     .arrow
       border-color transparent transparent #B4B4B3 transparent 
       border-width 8px
       border-style dashed dashed solid dashed 
       position absolute
-      left 10%
+      left 50%
       top -50%
+      margin-left -4px
       margin-top 4px
       .blank
         border-color transparent transparent #fff transparent 
