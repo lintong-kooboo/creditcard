@@ -3,7 +3,7 @@
     <v-cardContent :cardNum="cardNum"
                    :cardOwner="cardOwner" 
                    :cardValidThru="cardValidThru" 
-                   :cardStyle="cardStyle"
+                   :showFront="showFront"
                    :cardCvc="cardCvc"
                    :numStyle="numStyle"
                    :nameStyle="nameStyle"
@@ -15,6 +15,7 @@
                    oninput="this.value = this.value.replace(/[^\d]/g,'').replace(/(\d{4})(?=\d)/g,'$1 ')" 
                    v-model="cardNum"
                    ref="inputCardNum"
+                   @click="showFront=true"
                    @focus="numStyle = !numStyle" 
                    @blur="numStyle = !numStyle">
             <v-bounced :promptMsg="promptMsg" v-show="isPrompt[0]"></v-bounced>
@@ -24,6 +25,7 @@
             <input class="input-name" type="text" placeholder="Name"
                    ref="inputName"
                    v-model="cardOwner" 
+                   @click="showFront=true"
                    @focus="nameStyle = !nameStyle"
                    @blur="nameStyle = !nameStyle" >
             <v-bounced :promptMsg="promptMsg" v-show="isPrompt[1]"></v-bounced>
@@ -35,6 +37,7 @@
                  oninput="this.value = this.value.replace(/[^\d]/g,'').replace(/(\d{2})(?=\d)/g,'$1/')" 
                  v-model="cardValidThru"
                  ref="inputValidThru"
+                 @click="showFront=true"
                  @focus="validthruStyle = !validthruStyle" 
                  @blur="validthruStyle = !validthruStyle" >
           <v-bounced :promptMsg="promptMsg" v-show="isPrompt[2]"></v-bounced>
@@ -44,14 +47,13 @@
                  oninput="this.value = this.value.replace(/[^\d]/g,'')" 
                  v-model="cardCvc"
                  ref="inputCvc"  
-                 @focus="toCardBack" 
-                 @blur="toCardFront">
+                 @click="showFront=false">
           <v-bounced :promptMsg="promptMsg" v-show="isPrompt[3]"></v-bounced>
         </div>
       </div>
     </div>
     <div class="pay">
-      <button class="pay-btn" type="submit" v-on:click="pay">Pay</button>
+      <button class="pay-btn" type="submit" v-on:click="pay" @click="showFront=true">Pay</button>
       <div class="pay-card-info" v-show="showResult">
           number: {{cardNum}}<br>
           name: {{cardOwner}}<br>
@@ -72,7 +74,7 @@ export default {
   name : 'creditcard',
   data() {
     return {
-      cardStyle : 'card',
+      showFront : true,
       cardNum : '',
       cardOwner : '',
       cardValidThru : '',
@@ -90,12 +92,6 @@ export default {
     'v-bounced': bounced
   },
   methods : {
-    toCardBack : function() {  
-      this.cardStyle = 'cardback'
-    },
-    toCardFront : function() {
-      this.cardStyle = 'cardfront' + ' ' + 'card'
-    },
     pay : function() {
       var cardinfo = [this.cardNum,this.cardOwner,this.cardValidThru,this.cardCvc]
       // card number

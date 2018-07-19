@@ -1,6 +1,7 @@
 <template>
-  <div :class="[cardStyle]" v-bind:style="{background : changeBgColor}">
-      <div class="card-front">
+  <div class="card">
+    <transition name="front">
+      <div class="card-front" v-bind:style="{background : changeBgColor}" v-if="showFront">
         <div class="card-image"></div>
         <div class="card-logo" :class="[changeCardLogo]"></div>
         <div class="card-num" :class="{focused : numStyle}">
@@ -14,12 +15,15 @@
           {{editCardValidThru}}
         </div>
       </div>
-    <div class="card-back">
-      <div class="card-back-bg"></div>
-      <div class="card-back-content">
-        {{cardCvc}}
+    </transition>
+    <transition name="back">
+      <div class="card-back" v-if="!showFront">
+        <div class="card-back-bg"></div>
+        <div class="card-back-content">
+          {{cardCvc}}
+        </div>
       </div>
-    </div>
+    </transition>
   </div>
 </template>
 
@@ -30,9 +34,9 @@ import { replaceStr } from "../common/common.js"
 export default {
   name : 'cardContent',
   props : {
-    cardStyle : {
-      type : String,
-      value : 'card'
+    showFront : {
+      type : Boolean,
+      value : true
     },
     cardNum : {
       type : String,
@@ -115,53 +119,41 @@ export default {
 </script>
 
 <style scoped lang="stylus" rel="stylesheet/stylus">
-  .card-front,.card-back
-    backface-visibility hidden
-  .card-front
-    z-index 2
-  .card-back
-    transform rotateY(180deg)
   .card
     width 290px
+    height 150px
+    margin 0 auto 20px
+    position relative
+    perspective 1000px
+  .card-front,.card-back
+    backface-visibility hidden
     margin 0 auto
-    color #C3C3C3
     border-radius 15px
     background-color #999999
-    position relative
-    .card-back
-      display none
-    .card-front
-      display block
-  .cardfront
-    transition 0.6s
+    font-weight bolder
+    transform translate3d(0,0,0)
     transform-style preserve-3d
-  .cardback
-    width 290px
-    margin 0 auto
-    color #C3C3C3
-    border-radius 15px
-    background-color #999999
-    position relative
-    transform rotateY(180deg)
-    transition 0.6s
-    transform-style preserve-3d
-    .card-front
-      display none
-    .card-back
-      display block
+    transition transform .2s linear
   .card-front
     width 230px
-    padding 18px 0 30px 30px
+    color #C3C3C3
+    padding 18px 30px 30px
+    position relative
     font-size 13PX
-    font-weight bolder
+    z-index 2
   .card-back
     width 100%
     height 141px
     padding 18px 0 30px
-    background-color #000000
-    margin 0 auto
-    border-radius 15px
-    background-color #999999
+    color #000000
+    position absolute
+    top 0
+    left 50%
+    margin-left -145px
+  .front-enter-active, .front-leave-active
+    transform rotateY(90deg)
+  .back-enter-active, .back-leave-active
+    transform rotateY(-90deg)
   .card-image
     width 37px
     height 27px
